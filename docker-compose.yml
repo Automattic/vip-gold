@@ -1,0 +1,137 @@
+version: '3.4'
+x-mariadb-envvars:
+  MYSQL_ROOT_PASSWORD: '${VIPGO_MYSQL_ROOT_PASSWORD}'
+  MYSQL_DATABASE: '${VIPGO_WP_DB_USER}'
+  MYSQL_USER: '${VIPGO_WP_DB_USER}'
+  MYSQL_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
+x-wordpress-envvars:
+  VIRTUAL_HOST: '${VIPGO_DOMAIN}'
+  WORDPRESS_DB_NAME: '${VIPGO_WP_DB_NAME}'
+  WORDPRESS_DB_USER: '${VIPGO_WP_DB_USER}'
+  WORDPRESS_DB_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
+services:
+  mariadb:
+    cap_add:
+      - SYS_PTRACE
+    environment:
+      MYSQL_ROOT_PASSWORD: '${VIPGO_MYSQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${VIPGO_WP_DB_USER}'
+      MYSQL_USER: '${VIPGO_WP_DB_USER}'
+      MYSQL_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
+    image: 'mariadb:10.2'
+    networks:
+      - backend
+    volumes:
+      - './data/mariadb:/var/lib/mysql:rw'
+  memcached:
+    image: 'memcached:alpine'
+    command:
+      - '-m 128 -vv -o modern'
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: "256M"
+  nginx:
+    cap_add:
+      - SYS_PTRACE
+    image: 'jwilder/nginx-proxy:alpine'
+    environment:
+      DHPARAM_GENERATION: 'false'
+    dns:
+      - 208.67.222.222
+      - 8.8.8.8
+    ports:
+      - '80:80'
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: "128M"
+    volumes:
+      - wp:/var/www/html
+      - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
+      - './app/wp-content/images:/var/www/html/wp-content/images:rw'
+      - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
+      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
+      - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
+      - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
+      - './app/wp-content/vip-config:/var/www/vip-config:rw'
+      - './conf/nginx/certs:/etc/nginx/certs:ro'
+      - './conf/nginx/conf.d/upstream-media-host:/etc/nginx/conf.d/upstream-media-host:ro'
+      - './conf/nginx/vhost.d:/etc/nginx/vhost.d:ro'
+      - './conf/nginx/fastcgi_params:/etc/nginx/fastcgi_params:ro'
+      - './conf/nginx/proxy.conf:/etc/nginx/proxy.conf:ro'
+      - './data/nginx:/var/cache/nginx:rw'
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+  wordpress:
+    cap_add:
+      - SYS_PTRACE
+    image: 'wpvip/wordpress:latest'
+    domainname: wpvipgolocal.net
+    environment:
+      HTTPS_METHOD: nohttps
+      VIRTUAL_HOST: '${VIPGO_DOMAIN}'
+      WORDPRESS_DB_NAME: '${VIPGO_WP_DB_NAME}'
+      WORDPRESS_DB_USER: '${VIPGO_WP_DB_USER}'
+      WORDPRESS_DB_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
+      VIRTUAL_PROTO: fastcgi
+      VIRTUAL_PORT: 9000
+      VIRTUAL_ROOT: /var/www/html
+      WORDPRESS_DB_HOST: mariadb
+    volumes:
+      - wp:/var/www/html
+      - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
+      - './app/wp-content/images:/var/www/html/wp-content/images:rw'
+      - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
+      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
+      - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
+      - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
+      - './app/wp-content/vip-config:/var/www/vip-config:rw'
+      - './app/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php:/var/www/html/wp-content/object-cache.php'
+      - './conf/wordpress/conf.d/zzz-wpvipgo-dev.ini:/usr/local/etc/php/conf.d/zzz-wpvipgo-dev.ini'
+      - './conf/wordpress/php/env.php:/usr/local/etc/php/env.php'
+    networks:
+      - backend
+    depends_on:
+      - nginx
+      - memcached
+      - mariadb
+  cli:
+    image: 'wpvip/cli:latest'
+    domainname: wpvipgolocal.net
+    volumes:
+      - wp:/var/www/html
+      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
+      - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
+      - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
+      - './app/wp-content/vip-config:/var/www/vip-config:rw'
+      - './app/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php:/var/www/html/wp-content/object-cache.php'
+      - './conf/wordpress/conf.d/zzz-wpvipgo-dev.ini:/usr/local/etc/php/conf.d/zzz-wpvipgo-dev.ini'
+      - './conf/wordpress/php/env.php:/usr/local/etc/php/env.php'
+    networks:
+      - backend
+    depends_on:
+      - memcached
+      - mariadb
+    command: '/bin/bash -c "trap : TERM INT; tail -f /dev/null & wait"'
+    working_dir: /var/www/html
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - '1080:1080'
+    networks:
+      - frontend
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: "128M"
+networks:
+  frontend: {}
+  backend: {}
+volumes:
+  wp: {}

@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.make
+app/
+conf/nginx/vhost.d/*
+!conf/nginx/vhost.d/default
+!conf/nginx/vhost.d/default_location
+data/

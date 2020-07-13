@@ -1,0 +1,111 @@
+# context: server
+
+root /var/www/html;
+index index.php index.html;
+
+client_max_body_size 2G;
+client_body_temp_path /tmp;
+client_body_timeout 600;
+
+fastcgi_read_timeout 1800;
+
+try_files $uri $uri/ @index.php;
+
+location @upstream_media {
+	internal;
+
+	include conf.d/upstream-media-host;
+
+	tcp_nodelay off;
+	if_modified_since         before;
+
+	proxy_buffering on;
+	proxy_max_temp_file_size  0;
+	proxy_http_version        1.1;
+	proxy_set_header          Connection '';
+	proxy_set_header          Authorization '';
+	proxy_set_header          Host $upstream_media_host;
+	proxy_set_header          X-Forwarded-For $proxy_add_x_forwarded_for;
+	proxy_hide_header         Cache-Control;
+	proxy_hide_header         Set-Cookie;
+	proxy_hide_header         Pragma;
+	proxy_hide_header         Expires;
+	proxy_hide_header         Vary;
+	proxy_hide_header         X-Frame-Options;
+
+	proxy_cache               upstream_media;
+	proxy_cache_key           "$request_method:$scheme:$host$request_uri";
+
+	proxy_cache_lock          on;
+	proxy_cache_lock_timeout  6s;
+	proxy_cache_revalidate    on;
+	proxy_cache_use_stale     error timeout invalid_header updating http_500 http_503;
+	proxy_ignore_headers      Cache-Control Expires Set-Cookie;
+
+	proxy_cache_valid         200 1h;
+
+	proxy_pass                https://$upstream_media_host;
+
+	add_header                X-Upstream-Media $upstream_cache_status;
+}
+
+location @empty_icon {
+	internal;
+	root /usr/local/nginx/html;
+	try_files $empty_icon =404;
+}
+
+location @index.php {
+	internal;
+	include fastcgi_params;
+	fastcgi_param  SCRIPT_FILENAME  $document_root/index.php;
+	fastcgi_param  SCRIPT_NAME      /index.php;
+	fastcgi_pass $host;
+}
+
+location ~ ^(?:/|/[_0-9a-zA-Z-]+/|/[_0-9a-zA-Z-]+/[_0-9a-zA-Z-]+/)wp-content/uploads/.* {
+	root /var/www/html;
+	try_files $uri @upstream_media;
+}
+
+location ~ ^/(?:[_0-9a-zA-Z-]+/|[_0-9a-zA-Z-]+/[_0-9a-zA-Z-]+/)_static/ {
+	rewrite ^/([_0-9a-zA-Z-]+/|[_0-9a-zA-Z-]+/[_0-9a-zA-Z-]+/)(_static/.*) /$2;
+	include fastcgi_params;
+	fastcgi_param SCRIPT_FILENAME $document_root/wp-content/mu-plugins/http-concat/ngx-http-concat.php;
+	fastcgi_pass $host;
+}
+
+location /_static/ {
+	include fastcgi_params;
+	fastcgi_param SCRIPT_FILENAME $document_root/wp-content/mu-plugins/http-concat/ngx-http-concat.php;
+	fastcgi_pass $host;
+}
+
+location = /wp-admin {
+	rewrite ^ /wp-admin/ permanent;
+}
+
+location ~ ^/(apple-touch-icon(?:-[^\.]*)?\.png|favicon\.ico)$ {
+	expires 30d;
+	try_files /wp-content/images/$host/$1 /wp-content/images/$1 @empty_icon;
+}
+
+location ~* \.(css|gif|js|json|jpe?g|png|svg|txt|xml) {
+	try_files $uri $uri/ =404;
+}
+
+location ~* \.(eot|ttf|otf|woff2?)$ {
+	add_header Access-Control-Allow-Methods 'GET, HEAD';
+	add_header Access-Control-Allow-Origin *;
+}
+
+location ~ \.php$ {
+	if (!-f $document_root$fastcgi_script_name){
+		rewrite ^ /index.php break;
+	}
+
+	fastcgi_split_path_info ^(.+\.php)(.*)$;
+	include fastcgi_params;
+	fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+	fastcgi_pass $host;
+}

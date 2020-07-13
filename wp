@@ -1,0 +1,4 @@
+#!/bin/sh
+set -euo pipefail
+
+exec docker-compose --log-level ERROR --compatibility exec cli wp "$@"
