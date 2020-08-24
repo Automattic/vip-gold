@@ -1,4 +1,4 @@
-# GoLD
+# GoLD 💛
 
 WordPress VIP **Go** **L**ocal **D**evelopment
 
