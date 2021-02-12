@@ -1,6 +1,5 @@
 <?php
 if ( 'cli' !== php_sapi_name() ) {
-	define( 'WP_DEBUG', true );
 	define( 'WP_DEBUG_DISPLAY', false );
 	define( 'SAVEQUERIES', true );
 }

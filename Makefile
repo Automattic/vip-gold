@@ -179,6 +179,8 @@ dev/up: $(DOCKER_COMPOSE) | init
 	@echo "$(YELLOW)STARTING ENVIRONMENT$(RESET)"
 	@echo "$(HR)"
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) up -d
+	# TODO
+	@$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) exec wordpress /bin/bash -c "rm -rf /var/www/html/wp-content/object-cache.php; cp -v /var/www/html/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php /var/www/html/wp-content/"
 
 .PHONY: dev/down
 dev/down: $(DOCKER_COMPOSE)
