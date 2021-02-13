@@ -26,6 +26,7 @@ HR        = "///////////////////////////////////////////////////////////////////
 PATCH := $(shell command -v patch 2>/dev/null)
 SUDO := $(shell command -v sudo 2>/dev/null)
 SED := $(shell command -v sed 2>/dev/null)
+## TODO replace with curl
 WGET := $(shell command -v wget 2>/dev/null)
 TAR := $(shell command -v tar 2>/dev/null)
 GREP := $(shell command -v grep 2>/dev/null)
@@ -179,8 +180,8 @@ dev/up: $(DOCKER_COMPOSE) | init
 	@echo "$(YELLOW)STARTING ENVIRONMENT$(RESET)"
 	@echo "$(HR)"
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) up -d
-	# TODO
-	@$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) exec wordpress /bin/bash -c "rm -rf /var/www/html/wp-content/object-cache.php; cp -v /var/www/html/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php /var/www/html/wp-content/"
+	@## TODO
+	@$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) exec wordpress /bin/bash -c "rm -rf /var/www/html/wp-content/object-cache.php; cp /var/www/html/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php /var/www/html/wp-content/ && echo 'Copied wp-content/object-cache.php successfully.'"
 
 .PHONY: dev/down
 dev/down: $(DOCKER_COMPOSE)
