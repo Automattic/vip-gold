@@ -1,8 +1,8 @@
 # context: server::location /
 
-if (!-f $document_root$fastcgi_script_name){
-	rewrite ^ /index.php break;
-}
+# context: location /
+
+try_files $uri $uri/ @index.php;
 
 fastcgi_split_path_info ^(.+\.php)(.*)$;
 fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;

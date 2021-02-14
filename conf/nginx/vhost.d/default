@@ -9,8 +9,6 @@ client_body_timeout 600;
 
 fastcgi_read_timeout 1800;
 
-try_files $uri $uri/ @index.php;
-
 location @upstream_media {
 	internal;
 
@@ -99,13 +97,8 @@ location ~* \.(eot|ttf|otf|woff2?)$ {
 	add_header Access-Control-Allow-Origin *;
 }
 
-location ~ \.php$ {
-	if (!-f $document_root$fastcgi_script_name){
-		rewrite ^ /index.php break;
-	}
-
-	fastcgi_split_path_info ^(.+\.php)(.*)$;
-	include fastcgi_params;
-	fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-	fastcgi_pass $host;
+if (!-e $request_filename) {
+	rewrite /wp-admin$ $scheme://$host$request_uri/ permanent;
+	rewrite ^(/[^/]+)?(/wp-.*) $2 last;
+	rewrite ^(/[^/]+)?(/.*\.php) $2 last;
 }
