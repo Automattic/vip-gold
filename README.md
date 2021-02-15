@@ -20,6 +20,7 @@ WordPress VIP **Go** **L**ocal **D**evelopment
     1. `VIPGO_DOMAIN` = the domain name the local development environment should use
     2. `VIPGO_UPSTREAM_MEDIA_HOST` = for assets referenced in `/wp-content/uploads/*` that don't exist locally, a domain name that can be used to send requests for the assets to
 4. `make dev/up`
+5. Update `/etc/hosts` to resolve your domain to loopback address, e.g. `127.0.0.1 wpvipgold.com`
 
 ## Commands
 
