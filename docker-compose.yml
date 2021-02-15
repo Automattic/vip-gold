@@ -106,6 +106,9 @@ services:
     domainname: wpvipgolocal.net
     volumes:
       - wp:/var/www/html
+      - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
+      - './app/wp-content/images:/var/www/html/wp-content/images:rw'
+      - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
       - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
       - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
       - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
