@@ -7,9 +7,8 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 * `docker`
 * `docker-compose`
 * `sudo`
-* `patch`
 * `tar`
-* `wget`
+* `curl`
 * `sed`
 
 ## Getting Started

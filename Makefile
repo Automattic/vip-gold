@@ -23,11 +23,9 @@ RESET     = $(shell tput -Txterm sgr0)
 HR        = "////////////////////////////////////////////////////////////////////////////////"
 
 
-PATCH := $(shell command -v patch 2>/dev/null)
 SUDO := $(shell command -v sudo 2>/dev/null)
 SED := $(shell command -v sed 2>/dev/null)
-## TODO replace with curl
-WGET := $(shell command -v wget 2>/dev/null)
+CURL := $(shell command -v curl 2>/dev/null)
 TAR := $(shell command -v tar 2>/dev/null)
 GREP := $(shell command -v grep 2>/dev/null)
 PERL := $(shell command -v perl 2>/dev/null)
@@ -35,7 +33,7 @@ DOCKER := $(shell command -v docker 2>/dev/null)
 DOCKER_COMPOSE := $(shell command -v docker-compose 2>/dev/null)
 DOCKER_COMPOSE_OPTS := --log-level ERROR --compatibility
 
-EXECUTABLES = PATCH SUDO SED WGET TAR DOCKER DOCKER_COMPOSE
+EXECUTABLES = SUDO SED CURL TAR DOCKER DOCKER_COMPOSE
 K := $(foreach exec,$(EXECUTABLES),\
        $(if $($(exec)),OK,$(error "No $(exec) in PATH")))
 
@@ -144,17 +142,16 @@ app/wp-content: $(DOCKER_COMPOSE)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 	exit 0
 
-app/wp-content/mu-plugins: $(TAR) $(PATCH) | data/wordpress/vip-go-mu-plugins.tar.gz
+app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
 	@echo "$(HR)"
 	@echo "$(YELLOW)INIT: app/wp-content/mu-plugins$(RESET)"
 	@echo "$(HR)"
 	mkdir -p app/wp-content/mu-plugins
 	$(TAR) -xzvf data/wordpress/vip-go-mu-plugins.tar.gz --strip-components=1 -C app/wp-content/mu-plugins
-	$(PATCH) -F0 -p0 -d "$(THIS_DIR)" -i "$(THIS_DIR)/dev-env.diff"
 
-data/wordpress/vip-go-mu-plugins.tar.gz: $(WGET)
+data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 	mkdir -p data/wordpress
-	$(WGET) -O data/wordpress/vip-go-mu-plugins.tar.gz $(VIPGO_MUPLUGINS)
+	$(CURL) -sL --fail -o data/wordpress/vip-go-mu-plugins.tar.gz $(VIPGO_MUPLUGINS)
 
 .PHONY: /etc/hosts
 /etc/hosts:
@@ -180,8 +177,6 @@ dev/up: $(DOCKER_COMPOSE) | init
 	@echo "$(YELLOW)STARTING ENVIRONMENT$(RESET)"
 	@echo "$(HR)"
 	$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) up -d
-	@## TODO
-	@$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) exec wordpress /bin/bash -c "rm -rf /var/www/html/wp-content/object-cache.php; cp /var/www/html/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php /var/www/html/wp-content/ && echo 'Copied wp-content/object-cache.php successfully.'"
 
 .PHONY: dev/down
 dev/down: $(DOCKER_COMPOSE)

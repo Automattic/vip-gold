@@ -9,7 +9,7 @@ define( 'DISALLOW_FILE_MODS', true );
 define( 'AUTOMATIC_UPDATER_DISABLED', true );
 
 define( 'WPCOM_IS_VIP_ENV', false );
-define( 'VIP_GO_ENV', 'local' );
+define( 'WP_ENVIRONMENT_TYPE', 'local' );
 define( 'VIP_BLOCK_WP_MAIL', true );
 define( 'FILES_CLIENT_SITE_ID', 1 );
 
