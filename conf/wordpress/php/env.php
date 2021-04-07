@@ -10,8 +10,13 @@ define( 'AUTOMATIC_UPDATER_DISABLED', true );
 
 define( 'WPCOM_IS_VIP_ENV', false );
 define( 'WP_ENVIRONMENT_TYPE', 'local' );
+define( 'VIP_GO_APP_ENVIRONMENT', 'local' );
 define( 'VIP_BLOCK_WP_MAIL', true );
 define( 'FILES_CLIENT_SITE_ID', 1 );
+
+define( 'VIP_GO_DISABLE_RAMP', true );
+define( 'VIP_VAULTPRESS_SKIP_LOAD', true );
+define( 'VIP_JETPACK_CONNECTION_PILOT_SHOULD_RUN', false );
 
 /*
 $all_smtp_servers = array (
