@@ -161,6 +161,7 @@ data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 .PHONY: dev/upgrade
 dev/upgrade: $(DOCKER_COMPOSE)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
+	@$(DOCKER) system prune --volumes
 	@$(DOCKER_COMPOSE) $(DOCKER_COMPOSE_OPTS) pull -q
 	@rm -f app/index.php app/wp-includes/version.php
 	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
