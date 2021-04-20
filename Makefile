@@ -71,9 +71,9 @@ help:
 .PHONY: init
 init: $(DOCKER)
 	@echo "$(BLUE)[+] Initialize Development Environment$(RESET)"
-	@$(SELF) -f $(THIS_FILE) -s init/mariadb
-	@$(SELF) -f $(THIS_FILE) -s init/nginx
 	@$(SELF) -f $(THIS_FILE) -s init/wordpress
+	@$(SELF) -f $(THIS_FILE) -s init/nginx
+	@$(SELF) -f $(THIS_FILE) -s init/mariadb
 
 .PHONY: init/mariadb
 init/mariadb: $(DOCKER) | data/mariadb
@@ -112,8 +112,8 @@ conf/nginx/conf.d/upstream-media-host: $(SED)
 	@echo 'set $$upstream_media_host "$(VIPGO_UPSTREAM_MEDIA_HOST)";' > conf/nginx/conf.d/upstream-media-host
 
 .PHONY: init/wordpress
-init/wordpress: $(DOCKER) | app/wp-content app/wp-content/mu-plugins
-	@echo "$(BLUE) ⠿ Initialized: app/wp-cpontent$(RESET)"
+init/wordpress: $(DOCKER) | app/wp-content/mu-plugins app/wp-content
+	@echo "$(BLUE) ⠿ Initialized: app/wp-content$(RESET)"
 	@echo "$(BLUE) ⠿ Initialized: app/wp-content/mu-plugins$(RESET)"
 
 app/wp-content: $(DOCKER)
