@@ -156,7 +156,6 @@ dev/upgrade: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 	@$(DOCKER) system prune --force --volumes
 	@$(DOCKER) compose pull -q
-	@rm -f app/index.php app/wp-includes/version.php
 	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s dev/up
 
