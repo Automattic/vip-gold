@@ -105,16 +105,26 @@ data/mariadb:
 
 .PHONY: init/nginx
 init/nginx: $(DOCKER) conf/nginx/conf.d/upstream-media-host
-	@echo "$(BLUE) ⠿ Initialized: conf/nginx$(RESET)"
+	mkdir -p data/nginx
+	@echo "$(BLUE) ⠿ Initialized: data/nginx$(RESET)"
 
 .PHONY: conf/nginx/conf.d/upstream-media-host
 conf/nginx/conf.d/upstream-media-host: $(SED)
 	@echo 'set $$upstream_media_host "$(VIPGO_UPSTREAM_MEDIA_HOST)";' > conf/nginx/conf.d/upstream-media-host
+	@echo "$(BLUE) ⠿ Initialized: conf/nginx$(RESET)"
 
 .PHONY: init/wordpress
-init/wordpress: $(DOCKER) | app/wp-content/mu-plugins app/wp-content
+init/wordpress: $(DOCKER) | app/wp-content/mu-plugins app/wp-content/uploads app/wp-content
 	@echo "$(BLUE) ⠿ Initialized: app/wp-content$(RESET)"
 	@echo "$(BLUE) ⠿ Initialized: app/wp-content/mu-plugins$(RESET)"
+
+app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
+	@echo "[+] Initialize: app/wp-content/mu-plugins"
+	mkdir -p app/wp-content/mu-plugins
+	$(TAR) -xzvf data/wordpress/vip-go-mu-plugins.tar.gz --strip-components=1 -C app/wp-content/mu-plugins
+
+app/wp-content/uploads: $(DOCKER)
+	mkdir -p app/wp-content/uploads
 
 app/wp-content: $(DOCKER)
 	@echo "[+] Initialize: app/wp-content"
@@ -136,11 +146,6 @@ app/wp-content: $(DOCKER)
 	fi;
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 	exit 0
-
-app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
-	@echo "[+] Initialize: app/wp-content/mu-plugins"
-	mkdir -p app/wp-content/mu-plugins
-	$(TAR) -xzvf data/wordpress/vip-go-mu-plugins.tar.gz --strip-components=1 -C app/wp-content/mu-plugins
 
 data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 	mkdir -p data/wordpress
