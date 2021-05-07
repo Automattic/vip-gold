@@ -32,6 +32,12 @@ $memcached_servers = array (
 ini_set( 'session.save_handler', 'memcache' );
 ini_set( 'session.save_path', 'tcp://memcached:11211?persistent=1' );
 ini_set( 'memcache.session_redundancy', 1 );
+ini_set( 'max_execution_time', 300 );
+
+// for multisite set upload max file size to 1048576
+// in network settings for 1GB uploads
+ini_set( 'upload_max_filesize', '1024M' );
+ini_set( 'post_max_size', '1024M' );
 
 // site pecific config overrides
 if ( file_exists( '/var/www/vip-config/vip-config.php' ) ) {
