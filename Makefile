@@ -152,7 +152,7 @@ dev/upgrade: $(DOCKER)
 dev/reset: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 	@$(DOCKER) system prune --force --volumes
-	@rm -rf data app
+	@rm -rf data app .env .env.make
 	@echo "$(BLUE) ⠿ Deleted: app/$(RESET)"
 	@echo "$(BLUE) ⠿ Deleted: data/$(RESET)"
 	@echo ""
