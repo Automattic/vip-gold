@@ -63,7 +63,9 @@ help:
 	@echo "  dev/up         - alias of docker-compose up -d"
 	@echo "  dev/down       - alias of docker-compose down"
 	@echo "  dev/upgrade    - update all container images and provided mu-plugins"
-	@echo "  dev/reset      - remove data/mariadb and run dev/upgrade"
+	@echo "  dev/restart    - stop and start the environment"
+	@echo ""
+	@echo "  dev/reset      - $(YELLOW)WARNING!$(RESET) removes app/ and data/"
 	@echo "  dev/xdebug/on  - enable xdebug support"
 	@echo "  dev/xdebug/off - disable xdebug support"
 	@echo ""
@@ -100,6 +102,7 @@ data/mariadb:
 		printf "%b" "$(RED)ERROR: mariadb didnt start successfully$(RESET)\n"; \
 		exit 1; \
 	fi;
+	sleep 3;
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 	@exit 0
 
@@ -114,38 +117,19 @@ conf/nginx/conf.d/upstream-media-host: $(SED)
 	@echo "$(BLUE) ⠿ Initialized: conf/nginx$(RESET)"
 
 .PHONY: init/wordpress
-init/wordpress: $(DOCKER) | app/wp-content/mu-plugins app/wp-content/uploads app/wp-content
-	@echo "$(BLUE) ⠿ Initialized: app/wp-content$(RESET)"
+init/wordpress: $(DOCKER) | app/wp-content app/wp-content/mu-plugins
 	@echo "$(BLUE) ⠿ Initialized: app/wp-content/mu-plugins$(RESET)"
+	@echo "$(BLUE) ⠿ Initialized: app/wp-content$(RESET)"
 
 app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
 	@echo "[+] Initialize: app/wp-content/mu-plugins"
 	mkdir -p app/wp-content/mu-plugins
 	$(TAR) -xzvf data/wordpress/vip-go-mu-plugins.tar.gz --strip-components=1 -C app/wp-content/mu-plugins
 
-app/wp-content/uploads: $(DOCKER)
-	mkdir -p app/wp-content/uploads
-
 app/wp-content: $(DOCKER)
 	@echo "[+] Initialize: app/wp-content"
-	$(DOCKER) compose up -d wordpress
-	@iter=1; \
-	max_wait=10; \
-	while [[ $$iter != $$max_wait ]]; do \
-		if stat ./app/wp-content &>/dev/null; then \
-			break; \
-		else \
-			echo "   waiting... ($$iter/$$max_wait)"; \
-			sleep 1; \
-			iter=$$((iter+1)); \
-		fi; \
-	done; \
-	if [[ $$iter == $$max_wait ]]; then \
-		printf "%b" "$(RED)ERROR: wordpress didnt start successfully$(RESET)\n"; \
-		exit 1; \
-	fi;
-	@$(SELF) -f $(THIS_FILE) -s dev/down
-	exit 0
+	$(GIT) clone "$(VIPGO_REPOSITORY)" app/wp-content
+	mkdir -p app/wp-content/{client-mu-plugins,images,languages,plugins,themes,vip-config,uploads}
 
 data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 	mkdir -p data/wordpress
@@ -166,8 +150,13 @@ dev/upgrade: $(DOCKER)
 
 .PHONY: dev/reset
 dev/reset: $(DOCKER)
-	@rm -rf data/mariadb
-	@$(SELF) -f $(THIS_FILE) -s dev/upgrade
+	@$(SELF) -f $(THIS_FILE) -s dev/down
+	@$(DOCKER) system prune --force --volumes
+	@rm -rf data app
+	@echo "$(BLUE) ⠿ Deleted: app/$(RESET)"
+	@echo "$(BLUE) ⠿ Deleted: data/$(RESET)"
+	@echo ""
+	@echo "$(GREEN)[+] DONE! run 'make init' to re-initialize the environment$(RESET)"
 
 .PHONY: dev/up
 dev/up: $(DOCKER) | init
@@ -178,6 +167,11 @@ dev/up: $(DOCKER) | init
 dev/down: $(DOCKER)
 	@echo "$(BLUE)[+] Stopping Development Environment$(RESET)"
 	@$(DOCKER) compose down
+
+.PHONY: dev/restart
+dev/restart: $(DOCKER)
+	@$(SELF) -f $(THIS_FILE) -s dev/down
+	@$(SELF) -f $(THIS_FILE) -s dev/up
 
 .PHONY: dev/xdebug/on
 dev/xdebug/on: $(DOCKER)
