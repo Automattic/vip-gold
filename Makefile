@@ -128,7 +128,7 @@ app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
 
 app/wp-content: $(DOCKER)
 	@echo "[+] Initialize: app/wp-content"
-	$(GIT) clone "$(VIPGO_REPOSITORY)" app/wp-content
+	#$(GIT) clone "$(VIPGO_REPOSITORY)" app/wp-content
 	mkdir -p app/wp-content/{client-mu-plugins,images,languages,plugins,themes,vip-config,uploads}
 
 data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
