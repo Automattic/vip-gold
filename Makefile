@@ -142,6 +142,7 @@ dev/upgrade: $(DOCKER)
 	@$(DOCKER) system prune --force --volumes
 	@$(DOCKER) compose pull -q
 	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
+	@$(SELF) -f $(THIS_FILE) -s app/wp-content/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s dev/up
 
 .PHONY: dev/reset
