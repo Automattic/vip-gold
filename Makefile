@@ -76,6 +76,7 @@ init: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s init/wordpress
 	@$(SELF) -f $(THIS_FILE) -s init/nginx
 	@$(SELF) -f $(THIS_FILE) -s init/mariadb
+	@echo "$(GREEN)[+] DONE! run 'make dev/up' to start the environment$(RESET)"
 
 .PHONY: init/mariadb
 init/mariadb: $(DOCKER) | data/mariadb
@@ -135,11 +136,6 @@ data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 	mkdir -p data/wordpress
 	$(CURL) -sL --fail -o data/wordpress/vip-go-mu-plugins.tar.gz $(VIPGO_MUPLUGINS)
 
-.PHONY: /etc/hosts
-/etc/hosts:
-	@$(GREP) -qxF '127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
-		|| $(SUDO) $(PERL) -i -pe "eof && do{print qq[\$$_\n# VIP Go Local Environment\n127.0.0.1 $(VIPGO_DOMAIN)\n]; exit;}" /etc/hosts
-
 .PHONY: dev/upgrade
 dev/upgrade: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
@@ -159,7 +155,7 @@ dev/reset: $(DOCKER)
 	@echo "$(GREEN)[+] DONE! run 'make init' to re-initialize the environment$(RESET)"
 
 .PHONY: dev/up
-dev/up: $(DOCKER) | init
+dev/up: $(DOCKER)
 	@echo "$(BLUE)[+] Starting Development Environment$(RESET)"
 	@$(DOCKER) compose up -d
 
@@ -167,6 +163,8 @@ dev/up: $(DOCKER) | init
 dev/down: $(DOCKER)
 	@echo "$(BLUE)[+] Stopping Development Environment$(RESET)"
 	@$(DOCKER) compose down
+	@echo -n "$(BLUE)[+] Removing volume: $(RESET)"
+	@$(DOCKER) volume rm --force "$$(basename $${PWD})_wp"
 
 .PHONY: dev/restart
 dev/restart: $(DOCKER)
@@ -184,3 +182,8 @@ dev/xdebug/off: $(DOCKER)
 	@$(DOCKER) compose exec -T wordpress \
 		sh -c "rm -fv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
 	@$(DOCKER) compose restart wordpress
+
+.PHONY: /etc/hosts
+/etc/hosts:
+	@$(GREP) -qxF '127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
+		|| $(SUDO) $(PERL) -i -pe "eof && do{print qq[\$$_\n# VIP Go Local Environment\n127.0.0.1 $(VIPGO_DOMAIN)\n]; exit;}" /etc/hosts
