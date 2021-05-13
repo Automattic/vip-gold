@@ -186,5 +186,5 @@ dev/xdebug/off: $(DOCKER)
 
 .PHONY: /etc/hosts
 /etc/hosts:
-	@$(GREP) -qxF '127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
+	@$(GREP) -qE '^127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
 		|| $(SUDO) $(PERL) -i -pe "eof && do{print qq[\$$_\n# VIP Go Local Environment\n127.0.0.1 $(VIPGO_DOMAIN)\n]; exit;}" /etc/hosts
