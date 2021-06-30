@@ -13,7 +13,7 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 
 ## Getting Started
 
-1. `git clone git@github.com:automattic/vip-gold && cd vip-gold`
+1. `git clone https://github.com/automattic/vip-gold && cd vip-gold`
 2. `cp .env.sample .env`
 3. Modify values in `.env`:
     1. `VIPGO_DOMAIN` = the domain name the local development environment should use
