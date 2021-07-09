@@ -4,8 +4,7 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 
 ## Requirements
 
-* `docker`
-* `docker-compose`
+* `docker` (with `compose`)
 * `sudo`
 * `tar`
 * `curl`
@@ -27,8 +26,8 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 
 ```
 init           - sets up environment requirements/dependencies
-dev/up         - alias of docker-compose up -d
-dev/down       - alias of docker-compose down
+dev/up         - alias of docker compose up -d
+dev/down       - alias of docker compose down
 dev/upgrade    - update all container images and provided mu-plugins
 
 dev/reset      - WARNING! removes app/ and data/
