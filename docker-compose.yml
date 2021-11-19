@@ -36,7 +36,7 @@ services:
   nginx:
     cap_add:
       - SYS_PTRACE
-    image: 'ninanung/nginx-proxy'
+    image: 'jwilder/nginx-proxy:alpine'
     environment:
       DHPARAM_GENERATION: 'false'
     dns:
