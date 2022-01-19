@@ -22,7 +22,7 @@ YELLOW    = $(shell tput -Txterm setaf 3)
 BLUE      = $(shell tput -Txterm setaf 4)
 RESET     = $(shell tput -Txterm sgr0)
 
-SUDO := $(shell command -v sudo 2>/dev/null)
+#SUDO := $(shell command -v sudo 2>/dev/null)
 SED := $(shell command -v sed 2>/dev/null)
 CURL := $(shell command -v curl 2>/dev/null)
 TAR := $(shell command -v tar 2>/dev/null)
