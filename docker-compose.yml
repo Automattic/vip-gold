@@ -19,6 +19,8 @@ services:
       MYSQL_USER: '${VIPGO_WP_DB_USER}'
       MYSQL_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
     image: 'mariadb:10.2'
+    ports:
+      - '33306:3306'
     networks:
       - backend
     volumes:
