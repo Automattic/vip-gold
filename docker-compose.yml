@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.9'
 x-mariadb-envvars:
   MYSQL_ROOT_PASSWORD: '${VIPGO_MYSQL_ROOT_PASSWORD}'
   MYSQL_DATABASE: '${VIPGO_WP_DB_USER}'
@@ -18,15 +18,16 @@ services:
       MYSQL_DATABASE: '${VIPGO_WP_DB_USER}'
       MYSQL_USER: '${VIPGO_WP_DB_USER}'
       MYSQL_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
-    image: 'mariadb:10.2'
+    image: 'mariadb:10.3'
     ports:
       - '33306:3306'
     networks:
       - backend
     volumes:
       - './data/mariadb:/var/lib/mysql:rw'
+
   memcached:
-    image: 'memcached:alpine'
+    image: 'memcached:1.6-alpine'
     command:
       - '-m 128 -vv -o modern'
     networks:
@@ -35,6 +36,7 @@ services:
       resources:
         limits:
           memory: "256M"
+
   nginx:
     cap_add:
       - SYS_PTRACE
@@ -69,6 +71,7 @@ services:
       - './conf/nginx/proxy.conf:/etc/nginx/proxy.conf:ro'
       - './data/nginx:/var/cache/nginx:rw'
       - '/var/run/docker.sock:/tmp/docker.sock:ro'
+
   wordpress:
     cap_add:
       - SYS_PTRACE
@@ -103,6 +106,7 @@ services:
       - nginx
       - memcached
       - mariadb
+
   cli:
     image: 'wpvip/cli:latest'
     domainname: wpvipgolocal.net
@@ -131,6 +135,7 @@ services:
       - mariadb
     command: '/bin/bash -c "trap : TERM INT; tail -f /dev/null & wait"'
     working_dir: /var/www/html
+
   mailcatcher:
     image: schickling/mailcatcher
     ports:
@@ -142,6 +147,7 @@ services:
       resources:
         limits:
           memory: "128M"
+
 networks:
   frontend: {}
   backend: {}
