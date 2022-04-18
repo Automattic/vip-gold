@@ -148,12 +148,15 @@ dev/upgrade: $(DOCKER)
 .PHONY: dev/reset
 dev/reset: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
-	@$(DOCKER) system prune --force --volumes
 	@rm -rf data app .env .env.make
 	@echo "$(BLUE) ⠿ Deleted: app/$(RESET)"
 	@echo "$(BLUE) ⠿ Deleted: data/$(RESET)"
-	@echo ""
-	@echo "$(GREEN)[+] DONE! run 'make init' to re-initialize the environment$(RESET)"
+	@echo "$(BLUE) ⠿ Deleted: .env$(RESET)"
+	@echo "$(YELLOW)[!] To re-initialize:"
+	@echo " - Run: cp .env.sample .env"
+	@echo " - Reconfigure .env"
+	@echo " - Run: make init$(RESET)"
+	@echo "$(GREEN)[+] DONE!$(RESET)"
 
 .PHONY: dev/up
 dev/up: $(DOCKER)
