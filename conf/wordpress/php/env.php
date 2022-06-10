@@ -15,7 +15,7 @@ define( 'FILES_CLIENT_SITE_ID', 1 );
 
 define( 'VIP_VAULTPRESS_SKIP_LOAD', true );
 define( 'VIP_JETPACK_CONNECTION_PILOT_SHOULD_RUN', false );
-
+define( 'VIP_GO_ENABLE_HTTP_CONCAT', true );
 
 $all_smtp_servers = array (
 	0 => 'mailcatcher:1025',
