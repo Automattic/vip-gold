@@ -75,7 +75,7 @@ services:
   wordpress:
     cap_add:
       - SYS_PTRACE
-    image: 'wpvip/wordpress:latest'
+    image: 'wpvip/wordpress:${VIPGO_PHP_VERSION}'
     domainname: wpvipgolocal.net
     environment:
       HTTPS_METHOD: nohttps
@@ -108,7 +108,7 @@ services:
       - mariadb
 
   cli:
-    image: 'wpvip/cli:latest'
+    image: 'wpvip/cli:${VIPGO_PHP_VERSION}'
     domainname: wpvipgolocal.net
     environment:
       WORDPRESS_DB_NAME: '${VIPGO_WP_DB_NAME}'

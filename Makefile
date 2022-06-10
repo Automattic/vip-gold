@@ -139,7 +139,7 @@ data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 .PHONY: dev/upgrade
 dev/upgrade: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
-	@$(DOCKER) system prune --force --volumes
+	@$(GIT) pull
 	@$(DOCKER) compose pull -q
 	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s app/wp-content/mu-plugins
