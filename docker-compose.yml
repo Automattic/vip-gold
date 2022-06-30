@@ -66,6 +66,7 @@ services:
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
       - './app/wp-content/vip-config:/var/www/vip-config:rw'
       - './conf/nginx/conf.d/upstream-media-host:/etc/nginx/conf.d/upstream-media-host:ro'
+      - './conf/nginx/html:/usr/local/nginx/html'
       - './conf/nginx/vhost.d:/etc/nginx/vhost.d:ro'
       - './conf/nginx/fastcgi_params:/etc/nginx/fastcgi_params:ro'
       - './conf/nginx/proxy.conf:/etc/nginx/proxy.conf:ro'

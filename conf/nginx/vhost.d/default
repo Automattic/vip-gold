@@ -34,10 +34,6 @@ root /var/www/html;
 index index.php index.html;
 
 client_max_body_size 2G;
-client_body_temp_path /tmp;
-client_body_timeout 600;
-
-fastcgi_read_timeout 1800;
 
 location @upstream_media {
 	internal;
@@ -114,7 +110,6 @@ location = /wp-admin {
 }
 
 location ~ ^/(apple-touch-icon(?:-[^\.]*)?\.png|favicon\.ico)$ {
-	expires 30d;
 	try_files /wp-content/images/$host/$1 /wp-content/images/$1 @empty_icon;
 }
 
