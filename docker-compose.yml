@@ -88,6 +88,11 @@ services:
       VIRTUAL_PORT: 9000
       VIRTUAL_ROOT: /var/www/html
       WORDPRESS_DB_HOST: mariadb
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+      - /var/log
     volumes:
       - wp:/var/www/html
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
