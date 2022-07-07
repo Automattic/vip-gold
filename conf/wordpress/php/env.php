@@ -17,6 +17,8 @@ define( 'VIP_VAULTPRESS_SKIP_LOAD', true );
 define( 'VIP_JETPACK_CONNECTION_PILOT_SHOULD_RUN', false );
 define( 'VIP_GO_ENABLE_HTTP_CONCAT', true );
 
+define( 'WPCOM_VIP_MAIL_TRACKING_KEY', '' );
+
 $all_smtp_servers = array (
 	0 => 'mailcatcher:1025',
 );
@@ -32,7 +34,11 @@ $memcached_servers = array (
 ini_set( 'session.save_handler', 'memcache' );
 ini_set( 'session.save_path', 'tcp://memcached:11211?persistent=1' );
 ini_set( 'memcache.session_redundancy', 1 );
-ini_set( 'max_execution_time', 300 );
+if ( PHP_SAPI === 'cli' ) {
+	ini_set( 'max_execution_time', 0 );
+} else {
+	ini_set( 'max_execution_time', 300 );
+}
 
 // for multisite set upload max file size to 1048576
 // in network settings for 1GB uploads
