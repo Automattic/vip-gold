@@ -24,6 +24,8 @@ services:
     networks:
       - backend
     volumes:
+      - './conf/mariadb/my.cnf:/etc/mysql/my.cnf:ro'
+      - './conf/mariadb/conf.d:/etc/mysql/conf.d'
       - './data/mariadb:/var/lib/mysql:rw'
 
   memcached:
