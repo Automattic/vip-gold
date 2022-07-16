@@ -90,6 +90,8 @@ services:
       VIRTUAL_PORT: 9000
       VIRTUAL_ROOT: /var/www/html
       WORDPRESS_DB_HOST: mariadb
+    extra_hosts:
+      - "${VIPGO_DOMAIN}:127.0.0.1"
     read_only: true
     tmpfs:
       - /tmp
@@ -123,6 +125,8 @@ services:
       WORDPRESS_DB_USER: '${VIPGO_WP_DB_USER}'
       WORDPRESS_DB_PASSWORD: '${VIPGO_WP_DB_PASSWORD}'
       WORDPRESS_DB_HOST: mariadb
+    extra_hosts:
+      - "${VIPGO_DOMAIN}:127.0.0.1"
     volumes:
       - wp:/var/www/html
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'

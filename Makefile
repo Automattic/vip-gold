@@ -22,7 +22,7 @@ YELLOW    = $(shell tput -Txterm setaf 3)
 BLUE      = $(shell tput -Txterm setaf 4)
 RESET     = $(shell tput -Txterm sgr0)
 
-#SUDO := $(shell command -v sudo 2>/dev/null)
+SUDO := $(shell command -v sudo 2>/dev/null)
 SED := $(shell command -v sed 2>/dev/null)
 CURL := $(shell command -v curl 2>/dev/null)
 TAR := $(shell command -v tar 2>/dev/null)
@@ -31,7 +31,7 @@ PERL := $(shell command -v perl 2>/dev/null)
 DOCKER := $(shell command -v docker 2>/dev/null)
 GIT := $(shell command -v git 2>/dev/null)
 
-EXECUTABLES = SED CURL TAR GREP DOCKER GIT
+EXECUTABLES = SUDO SED CURL TAR GREP PERL DOCKER GIT
 K := $(foreach exec,$(EXECUTABLES),\
        $(if $($(exec)),OK,$(error "No $(exec) in PATH")))
 
@@ -162,6 +162,7 @@ dev/reset: $(DOCKER)
 dev/up: $(DOCKER)
 	@echo "$(BLUE)[+] Starting Development Environment$(RESET)"
 	@$(DOCKER) compose up -d
+	@$(SELF) -f $(THIS_FILE) -s hosts/add
 
 .PHONY: dev/down
 dev/down: $(DOCKER)
@@ -169,6 +170,7 @@ dev/down: $(DOCKER)
 	@$(DOCKER) compose down
 	@echo -n "$(BLUE)[+] Removing volume: $(RESET)"
 	@$(DOCKER) volume rm --force "$$(basename $${PWD})_wp"
+	@$(SELF) -f $(THIS_FILE) -s hosts/remove
 
 .PHONY: dev/restart
 dev/restart: $(DOCKER)
@@ -187,7 +189,14 @@ dev/xdebug/off: $(DOCKER)
 		sh -c "rm -fv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
 	@$(DOCKER) compose restart wordpress
 
-.PHONY: /etc/hosts
-/etc/hosts:
+.PHONY: hosts/add
+hosts/add:
+	@echo "$(BLUE)[+] Updating /etc/hosts (enter password if prompted)$(RESET)"
 	@$(GREP) -qE '^127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
-		|| $(SUDO) $(PERL) -i -pe "eof && do{print qq[\$$_\n# VIP Go Local Environment\n127.0.0.1 $(VIPGO_DOMAIN)\n]; exit;}" /etc/hosts
+		|| $(SUDO) $(PERL) -i -pe "eof && do{print qq[\$$_\n127.0.0.1 $(VIPGO_DOMAIN)]; exit;}" /etc/hosts
+
+.PHONY: hosts/remove
+hosts/remove:
+	@echo "$(BLUE)[+] Updating /etc/hosts (enter password if prompted)$(RESET)"
+	@$(GREP) -qvE '^127.0.0.1\s+$(VIPGO_DOMAIN)' /etc/hosts \
+		&& $(SUDO) $(PERL) -0777 -i -pe "s/\n127.0.0.1\s+$(VIPGO_DOMAIN)\$$//gsm" /etc/hosts
