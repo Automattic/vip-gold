@@ -108,6 +108,7 @@ services:
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
       - './app/wp-content/vip-config:/var/www/vip-config:rw'
       - './app/wp-content/mu-plugins/drop-ins/object-cache/object-cache.php:/var/www/html/wp-content/object-cache.php'
+      - './conf/wordpress/conf.d/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
       - './conf/wordpress/conf.d/zzz-wpvipgo-dev.ini:/usr/local/etc/php/conf.d/zzz-wpvipgo-dev.ini'
       - './conf/wordpress/php/env.php:/usr/local/etc/php/env.php'
     networks:

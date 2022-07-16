@@ -179,14 +179,12 @@ dev/restart: $(DOCKER)
 
 .PHONY: dev/xdebug/on
 dev/xdebug/on: $(DOCKER)
-	@$(DOCKER) cp conf/wordpress/conf.d/docker-php-ext-xdebug.ini \
-		$$($(DOCKER) compose ps -q wordpress):/usr/local/etc/php/conf.d/
+	@$(PERL) -pi -e 's/^\;zend_extension/zend_extension/' conf/wordpress/conf.d/docker-php-ext-xdebug.ini
 	@$(DOCKER) compose restart wordpress
 
 .PHONY: dev/xdebug/off
 dev/xdebug/off: $(DOCKER)
-	@$(DOCKER) compose exec -T wordpress \
-		sh -c "rm -fv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
+	@$(PERL)  -pi -e 's/^zend_extension/\;zend_extension/' conf/wordpress/conf.d/docker-php-ext-xdebug.ini
 	@$(DOCKER) compose restart wordpress
 
 .PHONY: hosts/add
