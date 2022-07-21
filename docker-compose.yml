@@ -44,12 +44,14 @@ services:
       - SYS_PTRACE
     image: 'jwilder/nginx-proxy:alpine'
     environment:
-      DHPARAM_GENERATION: 'false'
+      DHPARAM_GENERATION: false
+      SSL_POLICY: Mozilla-Modern
     dns:
       - 208.67.222.222
       - 8.8.8.8
     ports:
       - '80:80'
+      - '443:443'
     networks:
       - frontend
       - backend
@@ -67,6 +69,7 @@ services:
       - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
       - './app/wp-content/vip-config:/var/www/vip-config:rw'
+      - './conf/nginx/certs:/etc/nginx/certs'
       - './conf/nginx/conf.d/upstream-media-host:/etc/nginx/conf.d/upstream-media-host:ro'
       - './conf/nginx/html:/usr/local/nginx/html'
       - './conf/nginx/vhost.d:/etc/nginx/vhost.d:ro'
@@ -81,7 +84,8 @@ services:
     image: 'wpvip/wordpress:${VIPGO_PHP_VERSION}'
     domainname: wpvipgolocal.net
     environment:
-      HTTPS_METHOD: nohttps
+      HTTPS_METHOD: noredirect
+      HSTS: off
       VIRTUAL_HOST: '${VIPGO_DOMAIN}'
       WORDPRESS_DB_NAME: '${VIPGO_WP_DB_NAME}'
       WORDPRESS_DB_USER: '${VIPGO_WP_DB_USER}'

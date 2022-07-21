@@ -30,6 +30,9 @@ gzip_types
   text/plain
   text/xml;
 
+server_tokens off;
+add_header X-rq "local ${server_port}" always;
+
 root /var/www/html;
 index index.php index.html;
 

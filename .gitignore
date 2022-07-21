@@ -2,6 +2,9 @@
 .env
 .env.make
 app/
+conf/nginx/certs/*.key
+conf/nginx/certs/*.csr
+conf/nginx/certs/*.crt
 conf/nginx/vhost.d/*
 !conf/nginx/vhost.d/default
 !conf/nginx/vhost.d/default_location
