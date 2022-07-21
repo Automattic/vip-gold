@@ -5,12 +5,9 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 ## Requirements
 
 * Mac OS X >= 11.6
+* Standard binaries (`sudo`, `sed`, `curl`, `tar`, `grep`, `perl`)
 * `docker` (with `compose`)
-* `sudo`
-* `tar`
-* `curl`
-* `sed`
-* `perl`
+* `git` (recommended: `brew install git` and update `$PATH`)
 * `openssl` (recommended: `brew install openssl@1.1` and update `$PATH`)
 
 ## Getting Started

@@ -9,10 +9,10 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 THIS_DIR  := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 ## from https://github.com/buildroot/buildroot/blob/master/Makefile
-THIS_VERS := $(MAKE_VERSION)
-MIN_VERS  := 3.81
-ifneq ($(firstword $(sort $(THIS_VERS) $(MIN_VERS))),$(MIN_VERS))
-$(error GNU make >= $(MIN_VERS) is required, installed version is $(THIS_VERS))
+MAKE_VERS := $(MAKE_VERSION)
+MAKE_MIN_VERS  := 3.81
+ifneq ($(firstword $(sort $(MAKE_VERS) $(MAKE_MIN_VERS))),$(MAKE_MIN_VERS))
+$(error GNU make >= $(MAKE_MIN_VERS) is required, installed version is $(MAKE_VERS))
 endif
 
 BOLD      = $(shell tput -Txterm bold)
@@ -22,21 +22,28 @@ YELLOW    = $(shell tput -Txterm setaf 3)
 BLUE      = $(shell tput -Txterm setaf 4)
 RESET     = $(shell tput -Txterm sgr0)
 
-SUDO := $(shell command -v sudo 2>/dev/null)
-SED := $(shell command -v sed 2>/dev/null)
-CURL := $(shell command -v curl 2>/dev/null)
-TAR := $(shell command -v tar 2>/dev/null)
-GREP := $(shell command -v grep 2>/dev/null)
-PERL := $(shell command -v perl 2>/dev/null)
-DOCKER := $(shell command -v docker 2>/dev/null)
+SUDO := $(shell command -v /usr/bin/sudo 2>/dev/null)
+SED := $(shell command -v /usr/bin/sed 2>/dev/null)
+CURL := $(shell command -v /usr/bin/curl 2>/dev/null)
+TAR := $(shell command -v /usr/bin/tar 2>/dev/null)
+GREP := $(shell command -v /usr/bin/grep 2>/dev/null)
+PERL := $(shell command -v /usr/bin/perl 2>/dev/null)
+SECURITY := $(shell command -v /usr/bin/security 2>/dev/null)
 GIT := $(shell command -v git 2>/dev/null)
+DOCKER := $(shell command -v docker 2>/dev/null)
 OPENSSL := $(shell command -v openssl 2>/dev/null)
-SECURITY := $(shell command -v security 2>/dev/null)
 
-EXECUTABLES = SUDO SED CURL TAR GREP PERL DOCKER GIT OPENSSL SECURITY
+EXECUTABLES = SUDO SED CURL TAR GREP PERL SECURITY GIT DOCKER OPENSSL
 K := $(foreach exec,$(EXECUTABLES),\
-       $(if $($(exec)),OK,$(error "No $(exec) in PATH")))
+       $(if $($(exec)),OK,$(error "No $(exec) in $$PATH")))
 
+OPENSSL_VERS      := $(shell $(OPENSSL) version | $(PERL) -n -e'/^OpenSSL ([0-9.]+)/ && print $$1')
+OPENSSL_MIN_VERS  := 1.1.1
+ifneq ($(firstword $(sort $(OPENSSL_VERS) $(OPENSSL_MIN_VERS))),$(OPENSSL_MIN_VERS))
+$(warning OpenSSL >= $(OPENSSL_MIN_VERS) is required, installed version is $(OPENSSL_VERS))
+$(warning Run 'brew install openssl@1.1' and follow instructions to update $$PATH)
+$(error Minimum requirements not met)
+endif
 
 define assert-set
   @[ -n "$($1)" ] || (echo "$(1) not defined in $(@)"; exit 1)
@@ -49,7 +56,7 @@ ifneq ($(shell test -e .env && echo -n HASENV),HASENV)
   $(error .env file is missing, copy .env.sample to .env, modify, and try again)
 endif
 
-MAKEENV   := $(shell bash -c "grep -vE '^\#' $(THIS_DIR)/.env | sed -e 's/=/?=/' -e '/^\$$/d' -e 's/^/export /;' > $(THIS_DIR)/.env.make")
+MAKEENV   := $(shell bash -c "$(GREP) -vE '^\#' $(THIS_DIR)/.env | sed -e 's/=/?=/' -e '/^\$$/d' -e 's/^/export /;' > $(THIS_DIR)/.env.make")
 include .env.make
 
 default:: help
@@ -100,7 +107,7 @@ data/mariadb:
 	max_wait=15; \
 	while [[ $$iter != $$max_wait ]]; \
 	do \
-		res=$$($(DOCKER) compose logs mariadb 2>/dev/null | grep -cE "mysqld: ready for connections"); \
+		res=$$($(DOCKER) compose logs mariadb 2>/dev/null | $(GREP) -cE "mysqld: ready for connections"); \
 		if [[ "$$res" == "2" ]]; then \
 			break; \
 		fi; \
@@ -147,8 +154,13 @@ data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
 .PHONY: dev/upgrade
 dev/upgrade: $(DOCKER)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
+
+	@echo "[+] Update: GoLD"
 	@$(GIT) pull
+
+	@echo "[+] Update: GoLD Docker Images"
 	@$(DOCKER) compose pull -q
+
 	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s app/wp-content/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s dev/up
@@ -231,7 +243,10 @@ $(HOME)/.local/share/vip-gold/ca.crt: $(OPENSSL) | $(HOME)/.local/share/vip-gold
     -out "$(@)" \
     -extensions v3_ca \
     -subj "/CN=VIP Go Local Development (GoLD)"
-	$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)" || echo
+
+	-$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)"
+	@echo
+
 	$(SUDO) $(SECURITY) add-trusted-cert \
 		-d \
 		-r trustRoot \
@@ -297,6 +312,7 @@ tls/reset: $(SUDO) $(SECURITY)
 		$${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).csr \
 		$${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).crt
 	
-	$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)" || echo
+	-$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)"
+	@echo
 
 	@echo "$(GREEN)[+] DONE!$(RESET)"
