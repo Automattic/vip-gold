@@ -17,6 +17,8 @@ define( 'VIP_VAULTPRESS_SKIP_LOAD', true );
 define( 'VIP_JETPACK_CONNECTION_PILOT_SHOULD_RUN', false );
 define( 'VIP_GO_ENABLE_HTTP_CONCAT', true );
 
+define( 'JETPACK_STAGING_MODE', true );
+
 define( 'WPCOM_VIP_MAIL_TRACKING_KEY', '' );
 
 $all_smtp_servers = array (
