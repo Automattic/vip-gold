@@ -25,6 +25,17 @@ WordPress VIP **Go** **L**ocal **D**evelopment
 4. `make init`
 5. `make dev/up`
 
+Executing `make dev/up` will automatically:
+* Use `openssl` to generate a root Certificate Authority (CA), if one doesn't exist, and add it to your `$HOME/Library/Keychains/login.keychain-db` keychain
+* Use `openssl` to generate a TLS certificate+key for the given `$VIPGO_DOMAIN` utilizing the root CA
+* Update `hosts(5)` with `127.0.0.1 $VIPGO_DOMAIN`
+
+**If the Mozilla Firefox browser is used, extra steps are needed**:
+1. Navigate to `about:config`
+2. Search for `security.enterprise_roots.enabled`
+3. Double click the result if set to `false` in order to set it to `true`
+4. Restart Mozilla Firefox
+
 ## Commands
 
 ```
