@@ -85,6 +85,8 @@ help:
 	@echo "  tls/domain     - generate VIPGO_DOMAIN cert + key"
 	@echo "  tls/reset      - remove certificate authority and VIPGO_DOMAIN cert+key"
 	@echo ""
+	@echo "  SQL=file.sql db/import - imoprts file.sql into mariadb instance"
+	@echo ""
 
 .PHONY: init
 init: $(DOCKER)
@@ -314,5 +316,25 @@ tls/reset: $(SUDO) $(SECURITY)
 	
 	-$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)"
 	@echo
+
+	@echo "$(GREEN)[+] DONE!$(RESET)"
+
+.PHONY: db/import
+db/import: $(DOCKER)
+	$(call assert-set,SQL)
+
+	@if [ ! -f $(SQL) ]; then \
+	  echo "$(SQL) doesn't exist!"; \
+	fi;
+
+	@echo "[+] Importing: $(SQL)"
+	@$(DOCKER) compose exec \
+		--no-TTY \
+		mariadb \
+		mysql \
+			-uroot \
+			-p$(VIPGO_MYSQL_ROOT_PASSWORD)\
+			$(VIPGO_WP_DB_NAME) \
+			< $(SQL)
 
 	@echo "$(GREEN)[+] DONE!$(RESET)"

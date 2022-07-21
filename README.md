@@ -52,4 +52,6 @@ hosts/remove   - remove VIPGO_DOMAIN from /etc/hosts
 tls/ca         - generate certificate authority, add to keychain
 tls/domain     - generate VIPGO_DOMAIN cert + key
 tls/reset      - remove certificate authority and VIPGO_DOMAIN cert+key
+
+SQL=file.sql db/import - imoprts file.sql into mariadb instance
 ```
