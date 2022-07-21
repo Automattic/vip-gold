@@ -53,5 +53,6 @@ tls/ca         - generate certificate authority, add to keychain
 tls/domain     - generate VIPGO_DOMAIN cert + key
 tls/reset      - remove certificate authority and VIPGO_DOMAIN cert+key
 
-SQL=file.sql db/import - imoprts file.sql into mariadb instance
+SQL=file.sql db/import - imports file.sql into mariadb instance
+db/export - exports mariadb DB into VIPGO_WP_DB_NAME.sql.gz
 ```

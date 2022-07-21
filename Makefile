@@ -28,12 +28,13 @@ CURL := $(shell command -v /usr/bin/curl 2>/dev/null)
 TAR := $(shell command -v /usr/bin/tar 2>/dev/null)
 GREP := $(shell command -v /usr/bin/grep 2>/dev/null)
 PERL := $(shell command -v /usr/bin/perl 2>/dev/null)
+GZIP := $(shell command -v /usr/bin/gzip 2>/dev/null)
 SECURITY := $(shell command -v /usr/bin/security 2>/dev/null)
 GIT := $(shell command -v git 2>/dev/null)
 DOCKER := $(shell command -v docker 2>/dev/null)
 OPENSSL := $(shell command -v openssl 2>/dev/null)
 
-EXECUTABLES = SUDO SED CURL TAR GREP PERL SECURITY GIT DOCKER OPENSSL
+EXECUTABLES = SUDO SED CURL TAR GREP PERL GZIP SECURITY GIT DOCKER OPENSSL
 K := $(foreach exec,$(EXECUTABLES),\
        $(if $($(exec)),OK,$(error "No $(exec) in $$PATH")))
 
@@ -85,7 +86,8 @@ help:
 	@echo "  tls/domain     - generate VIPGO_DOMAIN cert + key"
 	@echo "  tls/reset      - remove certificate authority and VIPGO_DOMAIN cert+key"
 	@echo ""
-	@echo "  SQL=file.sql db/import - imoprts file.sql into mariadb instance"
+	@echo "  SQL=file.sql db/import - imports file.sql into mariadb instance"
+	@echo "  db/export - exports mariadb DB into VIPGO_WP_DB_NAME.sql.gz"
 	@echo ""
 
 .PHONY: init
@@ -336,5 +338,20 @@ db/import: $(DOCKER)
 			-p$(VIPGO_MYSQL_ROOT_PASSWORD)\
 			$(VIPGO_WP_DB_NAME) \
 			< $(SQL)
+
+	@echo "$(GREEN)[+] DONE!$(RESET)"
+
+.PHONY: db/export
+db/export: $(DOCKER)
+	@echo "[+] Exporting: $(VIPGO_WP_DB_NAME).sql.gz"
+	@$(DOCKER) compose exec \
+		mariadb \
+		mysqldump \
+		  --opt \
+			-uroot \
+			-p$(VIPGO_MYSQL_ROOT_PASSWORD)\
+			$(VIPGO_WP_DB_NAME) \
+			| $(GZIP) -9 \
+			> $(VIPGO_WP_DB_NAME).sql.gz
 
 	@echo "$(GREEN)[+] DONE!$(RESET)"
