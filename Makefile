@@ -326,6 +326,7 @@ db/import: $(DOCKER)
 
 	@if [ ! -f $(SQL) ]; then \
 	  echo "$(SQL) doesn't exist!"; \
+	  exit 1; \
 	fi;
 
 	@echo "[+] Importing: $(SQL)"
