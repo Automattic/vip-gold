@@ -166,7 +166,10 @@ services:
           memory: "128M"
 
 networks:
-  frontend: {}
-  backend: {}
+  frontend:
+    enable_ipv6: false
+  backend:
+    enable_ipv6: false
+
 volumes:
   wp: {}
