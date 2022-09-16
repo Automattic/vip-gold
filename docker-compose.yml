@@ -46,6 +46,8 @@ services:
     environment:
       DHPARAM_GENERATION: false
       SSL_POLICY: Mozilla-Modern
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     dns:
       - 208.67.222.222
       - 8.8.8.8
@@ -96,6 +98,7 @@ services:
       WORDPRESS_DB_HOST: mariadb
     extra_hosts:
       - "${VIPGO_DOMAIN}:127.0.0.1"
+      - "host.docker.internal:host-gateway"
     read_only: true
     tmpfs:
       - /tmp
@@ -103,6 +106,7 @@ services:
       - /var/log
     volumes:
       - wp:/var/www/html
+      - './conf/wordpress/php/ray.php:/var/www/html/ray.php:ro'
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
       - './app/wp-content/images:/var/www/html/wp-content/images:rw'
       - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
@@ -132,8 +136,10 @@ services:
       WORDPRESS_DB_HOST: mariadb
     extra_hosts:
       - "${VIPGO_DOMAIN}:127.0.0.1"
+      - "host.docker.internal:host-gateway"
     volumes:
       - wp:/var/www/html
+      - './conf/wordpress/php/ray.php:/var/www/html/ray.php:ro'
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
       - './app/wp-content/images:/var/www/html/wp-content/images:rw'
       - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
