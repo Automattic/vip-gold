@@ -35,7 +35,7 @@ OPENSSL := $(shell command -v openssl 2>/dev/null)
 
 EXECUTABLES = SUDO SED CURL TAR GREP PERL SECURITY GIT DOCKER OPENSSL
 K := $(foreach exec,$(EXECUTABLES),\
-       $(if $($(exec)),OK,$(error "No $(exec) in $$PATH")))
+			 $(if $($(exec)),OK,$(error "No $(exec) in $$PATH")))
 
 OPENSSL_VERS      := $(shell $(OPENSSL) version | $(PERL) -n -e'/^OpenSSL ([0-9.]+)/ && print $$1')
 OPENSSL_MIN_VERS  := 1.1.1
@@ -46,18 +46,20 @@ $(error Minimum requirements not met)
 endif
 
 define assert-set
-  @[ -n "$($1)" ] || (echo "$(1) not defined in $(@)"; exit 1)
+	@[ -n "$($1)" ] || (echo "$(1) not defined in $(@)"; exit 1)
 endef
 define assert-unset
-  @[ -z "$($1)" ] || (echo "$(1) should not be defined in $(@)"; exit 1)
+	@[ -z "$($1)" ] || (echo "$(1) should not be defined in $(@)"; exit 1)
 endef
 
 ifneq ($(shell test -e .env && echo -n HASENV),HASENV)
-  $(error .env file is missing, copy .env.sample to .env, modify, and try again)
+	$(error .env file is missing, copy .env.sample to .env, modify, and try again)
 endif
 
 MAKEENV   := $(shell bash -c "$(GREP) -vE '^\#' $(THIS_DIR)/.env | sed -e 's/=/?=/' -e '/^\$$/d' -e 's/^/export /;' > $(THIS_DIR)/.env.make")
 include .env.make
+
+DOMAIN := $(if $(DOMAIN),$(DOMAIN),$(VIPGO_DOMAIN))
 
 default:: help
 	@exit 0
@@ -82,11 +84,14 @@ help:
 	@echo "  hosts/remove   - remove VIPGO_DOMAIN from /etc/hosts"
 	@echo ""
 	@echo "  tls/ca         - generate certificate authority, add to keychain"
-	@echo "  tls/domain     - generate VIPGO_DOMAIN cert + key"
+	@echo "  tls/domain     - generate cert + key"
+	@echo "                   defaults to VIPGO_DOMAIN, override with DOMAIN"
+	@echo "                   ex: DOMAIN=differenttld.com make tls/domain"
 	@echo "  tls/reset      - remove certificate authority and VIPGO_DOMAIN cert+key"
 	@echo ""
-	@echo "  SQL=file.sql db/import - imports file.sql into mariadb instance"
-	@echo "  db/export - exports mariadb DB into VIPGO_WP_DB_NAME.sql"
+	@echo "  db/import      - imports file.sql into mariadb instance"
+	@echo "                   ex: SQL=file.sql make db-import"
+	@echo "  db/export      - exports mariadb DB into VIPGO_WP_DB_NAME.sql"
 	@echo ""
 
 .PHONY: init
@@ -237,15 +242,15 @@ $(HOME)/.local/share/vip-gold/ca.key: $(OPENSSL)
 $(HOME)/.local/share/vip-gold/ca.crt: $(OPENSSL) | $(HOME)/.local/share/vip-gold/ca.key
 	@echo "[+] Initialize: $(@)"
 	$(OPENSSL) req \
-    -config $${PWD}/conf/nginx/certs/openssl.cnf \
-    -x509 \
-    -new \
-    -nodes \
-    -key "$(HOME)/.local/share/vip-gold/ca.key" \
-    -days 3650 \
-    -out "$(@)" \
-    -extensions v3_ca \
-    -subj "/CN=VIP Go Local Development (GoLD)"
+		-config $${PWD}/conf/nginx/certs/openssl.cnf \
+		-x509 \
+		-new \
+		-nodes \
+		-key "$(HOME)/.local/share/vip-gold/ca.key" \
+		-days 3650 \
+		-out "$(@)" \
+		-extensions v3_ca \
+		-subj "/CN=VIP Go Local Development (GoLD)"
 
 	-$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)"
 	@echo
@@ -265,44 +270,44 @@ $(HOME)/.local/share/vip-gold/ca.crt: $(OPENSSL) | $(HOME)/.local/share/vip-gold
 
 .PHONY: tls/domain
 tls/domain: tls/ca \
-	conf/nginx/certs/$(VIPGO_DOMAIN).key \
-	conf/nginx/certs/$(VIPGO_DOMAIN).csr \
-	conf/nginx/certs/$(VIPGO_DOMAIN).crt
-	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(VIPGO_DOMAIN).key$(RESET)"
-	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(VIPGO_DOMAIN).csr$(RESET)"
-	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(VIPGO_DOMAIN).crt$(RESET)"
-	@echo "$(BLUE)[+] Generated TLS certificate for $(VIPGO_DOMAIN)$(RESET)"
+	conf/nginx/certs/$(DOMAIN).key \
+	conf/nginx/certs/$(DOMAIN).csr \
+	conf/nginx/certs/$(DOMAIN).crt
+	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(DOMAIN).key$(RESET)"
+	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(DOMAIN).csr$(RESET)"
+	@echo "$(BLUE) ⠿ Initialized: conf/nginx/certs/$(DOMAIN).crt$(RESET)"
+	@echo "$(BLUE)[+] Generated TLS certificate for $(DOMAIN)$(RESET)"
 
-conf/nginx/certs/$(VIPGO_DOMAIN).key: $(OPENSSL)
+conf/nginx/certs/$(DOMAIN).key: $(OPENSSL)
 	@echo "[+] Initialize: $(@)"
 	$(OPENSSL) genrsa -out $(@) 2048
 
-conf/nginx/certs/$(VIPGO_DOMAIN).csr: $(OPENSSL) | conf/nginx/certs/$(VIPGO_DOMAIN).key
+conf/nginx/certs/$(DOMAIN).csr: $(OPENSSL) | conf/nginx/certs/$(DOMAIN).key
 	@echo "[+] Initialize: $(@)"
 	$(OPENSSL) req \
 		-new \
-		-key $${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).key \
+		-key $${PWD}/conf/nginx/certs/$(DOMAIN).key \
 		-out $(@) \
-		-subj "/CN=$(VIPGO_DOMAIN)" \
-		-addext "subjectAltName = DNS:$(VIPGO_DOMAIN)" \
+		-subj "/CN=$(DOMAIN)" \
+		-addext "subjectAltName = DNS:$(DOMAIN)" \
 		-config $${PWD}/conf/nginx/certs/openssl.cnf
 
-conf/nginx/certs/$(VIPGO_DOMAIN).crt: $(OPENSSL) | conf/nginx/certs/$(VIPGO_DOMAIN).csr
+conf/nginx/certs/$(DOMAIN).crt: $(OPENSSL) | conf/nginx/certs/$(DOMAIN).csr
 	@echo "[+] Initialize: $(@)"
 	$(OPENSSL) x509 \
 		-req \
-		-in conf/nginx/certs/$(VIPGO_DOMAIN).csr \
+		-in conf/nginx/certs/$(DOMAIN).csr \
 		-CA $(HOME)/.local/share/vip-gold/ca.crt \
 		-CAkey $(HOME)/.local/share/vip-gold/ca.key \
 		-CAcreateserial \
 		-out $(@) \
-    -days 365 \
-    -extensions v3_req \
-    -extensions SAN \
-    -extfile <( \
-    	cat $${PWD}/conf/nginx/certs/openssl.cnf \
-    	<(printf "\n[SAN]\nsubjectAltName=DNS:$(VIPGO_DOMAIN)") \
-    )
+		-days 365 \
+		-extensions v3_req \
+		-extensions SAN \
+		-extfile <( \
+			cat $${PWD}/conf/nginx/certs/openssl.cnf \
+			<(printf "\n[SAN]\nsubjectAltName=DNS:$(DOMAIN)") \
+		)
 
 .PHONY: tls/reset
 tls/reset: $(SUDO) $(SECURITY)
@@ -311,9 +316,9 @@ tls/reset: $(SUDO) $(SECURITY)
 	@rm -fv \
 		$(HOME)/.local/share/vip-gold/ca.key \
 		$(HOME)/.local/share/vip-gold/ca.crt \
-		$${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).key \
-		$${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).csr \
-		$${PWD}/conf/nginx/certs/$(VIPGO_DOMAIN).crt
+		$${PWD}/conf/nginx/certs/$(DOMAIN).key \
+		$${PWD}/conf/nginx/certs/$(DOMAIN).csr \
+		$${PWD}/conf/nginx/certs/$(DOMAIN).crt
 	
 	-$(SUDO) $(SECURITY) delete-certificate -c "VIP Go Local Development (GoLD)"
 	@echo
@@ -325,8 +330,8 @@ db/import: $(DOCKER)
 	$(call assert-set,SQL)
 
 	@if [ ! -f $(SQL) ]; then \
-	  echo "$(SQL) doesn't exist!"; \
-	  exit 1; \
+		echo "$(SQL) doesn't exist!"; \
+		exit 1; \
 	fi;
 
 	@echo "[+] Importing: $(SQL)"
@@ -347,7 +352,7 @@ db/export: $(DOCKER)
 	@$(DOCKER) compose exec \
 		mariadb \
 		mysqldump \
-		  --opt \
+			--opt \
 			-uroot \
 			-p$(VIPGO_MYSQL_ROOT_PASSWORD)\
 			$(VIPGO_WP_DB_NAME) \
