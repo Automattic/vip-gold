@@ -63,10 +63,10 @@ services:
           memory: "128M"
     volumes:
       - wp:/var/www/html
+      - '${HOME}/.local/share/vip-gold/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
       - './app/wp-content/images:/var/www/html/wp-content/images:rw'
       - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
-      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
       - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
       - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
@@ -106,16 +106,16 @@ services:
       - /var/log
     volumes:
       - wp:/var/www/html
+      - '${HOME}/.local/share/vip-gold/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
+      - '${HOME}/.local/share/vip-gold/mu-plugins/drop-ins/object-cache/object-cache-stable.php:/var/www/html/wp-content/object-cache.php:r'
       - './conf/wordpress/php/ray.php:/var/www/html/ray.php:ro'
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
       - './app/wp-content/images:/var/www/html/wp-content/images:rw'
       - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
-      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
       - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
       - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
       - './app/wp-content/vip-config:/var/www/vip-config:rw'
-      - './app/wp-content/mu-plugins/drop-ins/object-cache/object-cache-stable.php:/var/www/html/wp-content/object-cache.php:r'
       - './conf/wordpress/conf.d/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
       - './conf/wordpress/conf.d/zzz-wpvipgo-dev.ini:/usr/local/etc/php/conf.d/zzz-wpvipgo-dev.ini'
       - './conf/wordpress/php/env.php:/usr/local/etc/php/env.php'
@@ -139,16 +139,16 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - wp:/var/www/html
+      - '${HOME}/.local/share/vip-gold/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
+      - '${HOME}/.local/share/vip-gold/mu-plugins/drop-ins/object-cache/object-cache-stable.php:/var/www/html/wp-content/object-cache.php:r'
       - './conf/wordpress/php/ray.php:/var/www/html/ray.php:ro'
       - './app/wp-content/client-mu-plugins:/var/www/html/wp-content/client-mu-plugins:rw'
       - './app/wp-content/images:/var/www/html/wp-content/images:rw'
       - './app/wp-content/languages:/var/www/html/wp-content/languages:rw'
-      - './app/wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins:rw'
       - './app/wp-content/plugins:/var/www/html/wp-content/plugins:rw'
       - './app/wp-content/themes:/var/www/html/wp-content/themes:rw'
       - './app/wp-content/uploads:/var/www/html/wp-content/uploads:rw'
       - './app/wp-content/vip-config:/var/www/vip-config:rw'
-      - './app/wp-content/mu-plugins/drop-ins/object-cache/object-cache-stable.php:/var/www/html/wp-content/object-cache.php:r'
       - './conf/wordpress/conf.d/zzz-wpvipgo-dev.ini:/usr/local/etc/php/conf.d/zzz-wpvipgo-dev.ini'
       - './conf/wordpress/php/env.php:/usr/local/etc/php/env.php'
     networks:

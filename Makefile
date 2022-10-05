@@ -60,6 +60,7 @@ MAKEENV   := $(shell bash -c "$(GREP) -vE '^\#' $(THIS_DIR)/.env | sed -e 's/=/?
 include .env.make
 
 DOMAIN := $(if $(DOMAIN),$(DOMAIN),$(VIPGO_DOMAIN))
+CACHE_DIR := $(HOME)/.local/share/vip-gold
 
 default:: help
 	@exit 0
@@ -141,23 +142,22 @@ conf/nginx/conf.d/upstream-media-host:
 	@echo "$(BLUE) ⠿ Initialized: conf/nginx$(RESET)"
 
 .PHONY: init/wordpress
-init/wordpress: $(DOCKER) | app/wp-content app/wp-content/mu-plugins
-	@echo "$(BLUE) ⠿ Initialized: app/wp-content/mu-plugins$(RESET)"
+init/wordpress: $(DOCKER) | app/wp-content $(CACHE_DIR)/mu-plugins
+	@echo "$(BLUE) ⠿ Initialized: $(CACHE_DIR)/mu-plugins$(RESET)"
 	@echo "$(BLUE) ⠿ Initialized: app/wp-content$(RESET)"
 
-app/wp-content/mu-plugins: $(TAR) | data/wordpress/vip-go-mu-plugins.tar.gz
-	@echo "[+] Initialize: app/wp-content/mu-plugins"
-	mkdir -p app/wp-content/mu-plugins
-	$(TAR) -xzvf data/wordpress/vip-go-mu-plugins.tar.gz --strip-components=1 -C app/wp-content/mu-plugins
+$(CACHE_DIR)/mu-plugins: $(TAR) | $(CACHE_DIR)/vip-go-mu-plugins.tar.gz
+	@echo "[+] Initialize: $(CACHE_DIR)/mu-plugins"
+	mkdir -p $(shell dirname $@)
+	$(TAR) -xzvf $(CACHE_DIR)/vip-go-mu-plugins.tar.gz --strip-components=1 -C $(CACHE_DIR)/mu-plugins
 
 app/wp-content: $(DOCKER)
 	@echo "[+] Initialize: app/wp-content"
 	$(GIT) clone "$(VIPGO_REPOSITORY)" app/wp-content
 	mkdir -p app/wp-content/{client-mu-plugins,images,languages,plugins,themes,vip-config,uploads}
 
-data/wordpress/vip-go-mu-plugins.tar.gz: $(CURL)
-	mkdir -p data/wordpress
-	$(CURL) -sL --fail -o data/wordpress/vip-go-mu-plugins.tar.gz $(VIPGO_MUPLUGINS)
+$(CACHE_DIR)/vip-go-mu-plugins.tar.gz: $(CURL)
+	$(CURL) -sL --fail -o $(CACHE_DIR)/vip-go-mu-plugins.tar.gz $(VIPGO_MUPLUGINS)
 
 .PHONY: dev/upgrade
 dev/upgrade: $(DOCKER)
@@ -169,8 +169,8 @@ dev/upgrade: $(DOCKER)
 	@echo "[+] Update: GoLD Docker Images"
 	@$(DOCKER) compose pull -q
 
-	@rm -rf data/wordpress/vip-go-mu-plugins.tar.gz app/wp-content/mu-plugins
-	@$(SELF) -f $(THIS_FILE) -s app/wp-content/mu-plugins
+	@rm -rf $(CACHE_DIR)/vip-go-mu-plugins.tar.gz $(CACHE_DIR)/mu-plugins
+	@$(SELF) -f $(THIS_FILE) -s $(CACHE_DIR)/mu-plugins
 	@$(SELF) -f $(THIS_FILE) -s dev/up
 
 .PHONY: dev/reset
@@ -229,24 +229,24 @@ hosts/remove:
 		&& $(SUDO) $(PERL) -0777 -i -pe "s/\n127.0.0.1\s+$(VIPGO_DOMAIN)\$$//gsm" /etc/hosts
 
 .PHONY: tls/ca
-tls/ca: $(SUDO) $(SECURITY) | $(HOME)/.local/share/vip-gold/ca.key $(HOME)/.local/share/vip-gold/ca.crt
-	@echo "$(BLUE) ⠿ Initialized: $(HOME)/.local/share/vip-gold/ca.key$(RESET)"
-	@echo "$(BLUE) ⠿ Initialized: $(HOME)/.local/share/vip-gold/ca.crt$(RESET)"
+tls/ca: $(SUDO) $(SECURITY) | $(CACHE_DIR)/ca.key $(CACHE_DIR)/ca.crt
+	@echo "$(BLUE) ⠿ Initialized: $(CACHE_DIR)/ca.key$(RESET)"
+	@echo "$(BLUE) ⠿ Initialized: $(CACHE_DIR)/ca.crt$(RESET)"
 	@echo "$(BLUE)[+] Certificate Authority exists in login.keychain-db$(RESET)"
 
-$(HOME)/.local/share/vip-gold/ca.key: $(OPENSSL)
+$(CACHE_DIR)/ca.key: $(OPENSSL)
 	@echo "[+] Initialize: $(@)"
 	@mkdir -pv $(shell dirname $@)
 	$(OPENSSL) genrsa -out "$(@)" 2048
 
-$(HOME)/.local/share/vip-gold/ca.crt: $(OPENSSL) | $(HOME)/.local/share/vip-gold/ca.key
+$(CACHE_DIR)/ca.crt: $(OPENSSL) | $(CACHE_DIR)/ca.key
 	@echo "[+] Initialize: $(@)"
 	$(OPENSSL) req \
 		-config $${PWD}/conf/nginx/certs/openssl.cnf \
 		-x509 \
 		-new \
 		-nodes \
-		-key "$(HOME)/.local/share/vip-gold/ca.key" \
+		-key "$(CACHE_DIR)/ca.key" \
 		-days 3650 \
 		-out "$(@)" \
 		-extensions v3_ca \
@@ -297,8 +297,8 @@ conf/nginx/certs/$(DOMAIN).crt: $(OPENSSL) | conf/nginx/certs/$(DOMAIN).csr
 	$(OPENSSL) x509 \
 		-req \
 		-in conf/nginx/certs/$(DOMAIN).csr \
-		-CA $(HOME)/.local/share/vip-gold/ca.crt \
-		-CAkey $(HOME)/.local/share/vip-gold/ca.key \
+		-CA $(CACHE_DIR)/ca.crt \
+		-CAkey $(CACHE_DIR)/ca.key \
 		-CAcreateserial \
 		-out $(@) \
 		-days 365 \
@@ -314,8 +314,8 @@ tls/reset: $(SUDO) $(SECURITY)
 	@$(SELF) -f $(THIS_FILE) -s dev/down
 
 	@rm -fv \
-		$(HOME)/.local/share/vip-gold/ca.key \
-		$(HOME)/.local/share/vip-gold/ca.crt \
+		$(CACHE_DIR)/ca.key \
+		$(CACHE_DIR)/ca.crt \
 		$${PWD}/conf/nginx/certs/$(DOMAIN).key \
 		$${PWD}/conf/nginx/certs/$(DOMAIN).csr \
 		$${PWD}/conf/nginx/certs/$(DOMAIN).crt
