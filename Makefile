@@ -148,7 +148,7 @@ init/wordpress: $(DOCKER) | app/wp-content $(CACHE_DIR)/mu-plugins
 
 $(CACHE_DIR)/mu-plugins: $(TAR) | $(CACHE_DIR)/vip-go-mu-plugins.tar.gz
 	@echo "[+] Initialize: $(CACHE_DIR)/mu-plugins"
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(CACHE_DIR)/mu-plugins
 	$(TAR) -xzvf $(CACHE_DIR)/vip-go-mu-plugins.tar.gz --strip-components=1 -C $(CACHE_DIR)/mu-plugins
 
 app/wp-content: $(DOCKER)
